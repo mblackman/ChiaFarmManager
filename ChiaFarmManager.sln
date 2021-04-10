@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChiaFarmManager", "ChiaFarmManager\ChiaFarmManager.csproj", "{BB3B57E9-D150-4A71-B32C-040814C20CAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChiaAdapter", "ChiaAdapter\ChiaAdapter.csproj", "{28D2B2BF-A3FE-4325-BB28-1503F1165ADE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB3B57E9-D150-4A71-B32C-040814C20CAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB3B57E9-D150-4A71-B32C-040814C20CAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB3B57E9-D150-4A71-B32C-040814C20CAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB3B57E9-D150-4A71-B32C-040814C20CAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28D2B2BF-A3FE-4325-BB28-1503F1165ADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28D2B2BF-A3FE-4325-BB28-1503F1165ADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28D2B2BF-A3FE-4325-BB28-1503F1165ADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28D2B2BF-A3FE-4325-BB28-1503F1165ADE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2FF88CF9-DFFC-4F31-A5F9-4542E084756C}
+	EndGlobalSection
+EndGlobal
