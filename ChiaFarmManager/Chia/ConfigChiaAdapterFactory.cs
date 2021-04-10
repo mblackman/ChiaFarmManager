@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 using ChiaAdapter;
 
@@ -23,6 +24,11 @@ namespace ChiaFarmManager.Chia
 
             if (applicationPath != null)
             {
+                if (!File.Exists(applicationPath))
+                {
+                    throw new ArgumentException("Chia exe path not found. " + applicationPath);
+                }
+
                 chiaPath = applicationPath;
             }
             else
