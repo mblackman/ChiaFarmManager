@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 using ChiaAdapter;
 
@@ -8,20 +7,58 @@ using ChiaFarmManager;
 
 using Common;
 
+using Microsoft.Extensions.CommandLineUtils;
+
 namespace ChiaManagerConsole
 {
     class Program
     {
         private readonly static CancellationTokenSource plottingCancellationToken = new CancellationTokenSource();
 
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
-            var adapter = new CliChiaAdapter(new ProcessChiaClient(@"C:\Users\mateo\AppData\Local\chia-blockchain\app-1.0.3\resources\app.asar.unpacked\daemon\chia.exe"));
-            var logger = new ConsoleLogger<PlottingManager>();
-            var tempFolders = new[] { @"G:\t1", @"G:\t2", @"H:\t3", @"E:\Chia\t4" };
-            var destinationFolders = new[] { @"Y:\", @"Z:\" };
-            var manager = new PlottingManager(logger, adapter, tempFolders, destinationFolders);
-            await manager.Plot(plottingCancellationToken.Token);
+            // Program.exe <-t|--temp <temp-directories>> <-d|--dest <destination-directories>> <-e|--exe <chia-exe>> 
+            // [-?|-h|--help]
+            CommandLineApplication commandLineApplication = new(throwOnUnexpectedArg: false);
+
+            CommandOption tempDirectories = commandLineApplication.Option(
+              "-t|--temp <temp-directories>",
+              "Set the list of directories to use as temp plotting space.",
+              CommandOptionType.MultipleValue);
+
+            CommandOption destinationDirectories = commandLineApplication.Option(
+              "-d|--dest <destination-directories>",
+              "Set the list of directories to put final plots.",
+              CommandOptionType.MultipleValue);
+
+            CommandOption chiaExe = commandLineApplication.Option(
+              "-e|--exe <chia-exe>",
+              "The location of the local Chia executable.",
+              CommandOptionType.SingleValue);
+
+            commandLineApplication.HelpOption("-? | -h | --help");
+
+            commandLineApplication.OnExecute(async () =>
+            {
+                if (!tempDirectories.HasValue())
+                {
+                    Console.WriteLine("Temp directory required.");
+                }
+                else if (!destinationDirectories.HasValue())
+                {
+                    Console.WriteLine("Destination directory required.");
+                }
+                else if (chiaExe.HasValue())
+                {
+                    var adapter = new CliChiaAdapter(new ProcessChiaClient(chiaExe.Value()));
+                    var logger = new ConsoleLogger<PlottingManager>();
+                    var manager = new PlottingManager(logger, adapter, tempDirectories.Values, destinationDirectories.Values);
+                    await manager.Plot(plottingCancellationToken.Token);
+                }
+
+                return 0;
+            });
+            commandLineApplication.Execute(args);
         }
 
         static void CurrentDomain_ProcessExit(object sender, EventArgs e)
