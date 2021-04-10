@@ -13,13 +13,13 @@ namespace ChiaAdapter
     public class ProcessChiaClient : IChiaClient
     {
         private readonly string exePath;
-        private readonly ILogger<ProcessChiaClient> logger;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Creates a new instance of <see cref="ProcessChiaClient"/>.
         /// </summary>
         /// <param name="exePath">The path to the executable.</param>
-        public ProcessChiaClient(string exePath, ILogger<ProcessChiaClient> logger)
+        public ProcessChiaClient(string exePath, ILogger logger)
         {
             this.exePath = exePath ?? throw new ArgumentNullException(nameof(exePath));
             this.logger = logger;

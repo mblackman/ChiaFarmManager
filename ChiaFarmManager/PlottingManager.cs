@@ -10,6 +10,9 @@ using Common;
 
 namespace ChiaFarmManager
 {
+    /// <summary>
+    /// Helps manage plotting Chia plots across many destinations.
+    /// </summary>
     public class PlottingManager
     {
         private const int MaxPlottingFailures = 3;
@@ -17,19 +20,22 @@ namespace ChiaFarmManager
         private const string StartPlottingFormat = "Started k = {0} plot in temp directory: {1} with destination: {2}";
         private const string EndPlottingFormat = "Finished plotting k = {0} plot in temp directory: {1} with destination: {2}";
 
-        private readonly ILogger<PlottingManager> logger;
+        private readonly ILogger logger;
         private readonly IChiaAdapter chiaAdapter;
         private readonly IEnumerable<string> tempFolders;
         private readonly IEnumerable<string> destinationFolders;
         private readonly PlottingManagerOptions plottingManagerOptions;
 
-        public PlottingManager(ILogger<PlottingManager> logger, IChiaAdapter chiaAdapter, IEnumerable<string> tempFolders, IEnumerable<string> destinationFolders)
-            : this(logger, chiaAdapter, tempFolders, destinationFolders, new PlottingManagerOptions())
-        {
 
-        }
-
-        public PlottingManager(ILogger<PlottingManager> logger, IChiaAdapter chiaAdapter, IEnumerable<string> tempFolders, IEnumerable<string> destinationFolders, PlottingManagerOptions plottingManagerOptions)
+        /// <summary>
+        /// Creates a new instance of <see cref="PlottingManager"/>.
+        /// </summary>
+        /// <param name="logger">The logger to use.</param>
+        /// <param name="chiaAdapter">The adapter to get/set data.</param>
+        /// <param name="tempFolders">The folder to use as temp plot store.</param>
+        /// <param name="destinationFolders">The destination folders to place the final plots.</param>
+        /// <param name="plottingManagerOptions">Options for the manager.</param>
+        public PlottingManager(ILogger logger, IChiaAdapter chiaAdapter, IEnumerable<string> tempFolders, IEnumerable<string> destinationFolders, PlottingManagerOptions plottingManagerOptions)
         {
             this.logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
             this.chiaAdapter = chiaAdapter ?? throw new System.ArgumentNullException(nameof(chiaAdapter));
@@ -38,6 +44,11 @@ namespace ChiaFarmManager
             this.plottingManagerOptions = plottingManagerOptions;
         }
 
+        /// <summary>
+        /// Plots to the destination drives until they are full.
+        /// </summary>
+        /// <param name="cancellationToken">A token to use to cancel sub-processes.</param>
+        /// <returns>The task from the operation.</returns>
         public async Task Plot(CancellationToken cancellationToken)
         {
             List<Task<PlottingResults>> plotTasks = new();
@@ -73,15 +84,15 @@ namespace ChiaFarmManager
 
                 if (result.IsSuccess)
                 {
-                    runningPlots[result.DestinationDirectory]--;
+                    runningPlots[result.PlottingOptions.DestinationDirectory]--;
 
-                    logger.LogInfo(string.Format(EndPlottingFormat, plottingManagerOptions.KSize, result.TempDirectory, result.DestinationDirectory));
+                    logger.LogInfo(string.Format(EndPlottingFormat, plottingManagerOptions.KSize, result.PlottingOptions.TempDirectory, result.PlottingOptions.DestinationDirectory));
 
                     currentDestination = GetNextAvailableDestination(runningPlots);
 
                     if (currentDestination != null)
                     {
-                        plotTasks.Add(CreateNextPlot(currentDestination, result.TempDirectory, runningPlots, cancellationToken));
+                        plotTasks.Add(CreateNextPlot(currentDestination, result.PlottingOptions.TempDirectory, runningPlots, cancellationToken));
                     }
                 }
                 else

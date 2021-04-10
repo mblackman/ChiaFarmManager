@@ -22,6 +22,12 @@ namespace ChiaAdapter
             this.chiaClient = chiaClient ?? throw new ArgumentNullException(nameof(chiaClient));
         }
 
+        /// <summary>
+        /// Creates plots.
+        /// </summary>
+        /// <param name="plottingOptions">The options of how to create the plots.</param>
+        /// <param name="cancellationToken">A token to cancel to create plot request.</param>
+        /// <returns>The result from the operation.</returns>
         public async Task<PlottingResults> CreatePlotsAsync(PlottingOptions plottingOptions, CancellationToken cancellationToken)
         {
             if (plottingOptions is null)
@@ -35,8 +41,7 @@ namespace ChiaAdapter
             return new PlottingResults()
             {
                 IsSuccess = results.IsSuccess,
-                TempDirectory = plottingOptions.TempDirectory,
-                DestinationDirectory = plottingOptions.FinalDirectory
+                PlottingOptions = plottingOptions
             };
         }
 
