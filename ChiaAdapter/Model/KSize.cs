@@ -17,6 +17,7 @@ namespace ChiaAdapter
 
         public static KSize Create(int size) => size switch
         {
+            28 => new KSize(size, GbToBtyes(1f), GbToBtyes(1f)),
             32 => new KSize(size, GbToBtyes(356.5f), GbToBtyes(108.9f)),
             33 => new KSize(size, GbToBtyes(632.4f), GbToBtyes(224.2f)),
             34 => new KSize(size, GbToBtyes(1263.8f), GbToBtyes(461.5f)),

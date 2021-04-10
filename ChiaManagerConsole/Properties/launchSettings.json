@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ChiaManagerConsole": {
+      "commandName": "Project",
+      "commandLineArgs": "-t \"C:\\TestTemp\" -d \"D:\\Test Dest\" -e \"C:\\Users\\mateo\\AppData\\Local\\chia-blockchain\\app-1.0.3\\resources\\app.asar.unpacked\\daemon\\chia.exe\" -k 28"
+    }
+  }
+}

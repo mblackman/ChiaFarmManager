@@ -17,8 +17,6 @@ namespace ChiaManagerConsole
 
         static void Main(string[] args)
         {
-            // Program.exe <-t|--temp <temp-directories>> <-d|--dest <destination-directories>> <-e|--exe <chia-exe>> 
-            // [-?|-h|--help]
             CommandLineApplication commandLineApplication = new(throwOnUnexpectedArg: false);
 
             CommandOption tempDirectories = commandLineApplication.Option(
@@ -34,6 +32,11 @@ namespace ChiaManagerConsole
             CommandOption chiaExe = commandLineApplication.Option(
               "-e|--exe <chia-exe>",
               "The location of the local Chia executable.",
+              CommandOptionType.SingleValue);
+
+            CommandOption kSize = commandLineApplication.Option(
+              "-k <k-size>",
+              "The size of plots to make.",
               CommandOptionType.SingleValue);
 
             commandLineApplication.HelpOption("-? | -h | --help");
@@ -52,7 +55,14 @@ namespace ChiaManagerConsole
                 {
                     var adapter = new CliChiaAdapter(new ProcessChiaClient(chiaExe.Value()));
                     var logger = new ConsoleLogger<PlottingManager>();
-                    var manager = new PlottingManager(logger, adapter, tempDirectories.Values, destinationDirectories.Values);
+                    var options = new PlottingManagerOptions();
+
+                    if (kSize.HasValue() && int.TryParse(kSize.Value(), out int setSize))
+                    {
+                        options.KSize = setSize;
+                    }
+
+                    var manager = new PlottingManager(logger, adapter, tempDirectories.Values, destinationDirectories.Values, options);
                     await manager.Plot(plottingCancellationToken.Token);
                 }
 

@@ -21,13 +21,21 @@ namespace ChiaFarmManager
         private readonly IChiaAdapter chiaAdapter;
         private readonly IEnumerable<string> tempFolders;
         private readonly IEnumerable<string> destinationFolders;
+        private readonly PlottingManagerOptions plottingManagerOptions;
 
         public PlottingManager(ILogger<PlottingManager> logger, IChiaAdapter chiaAdapter, IEnumerable<string> tempFolders, IEnumerable<string> destinationFolders)
+            : this(logger, chiaAdapter, tempFolders, destinationFolders, new PlottingManagerOptions())
+        {
+
+        }
+
+        public PlottingManager(ILogger<PlottingManager> logger, IChiaAdapter chiaAdapter, IEnumerable<string> tempFolders, IEnumerable<string> destinationFolders, PlottingManagerOptions plottingManagerOptions)
         {
             this.logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
             this.chiaAdapter = chiaAdapter ?? throw new System.ArgumentNullException(nameof(chiaAdapter));
             this.tempFolders = tempFolders ?? throw new System.ArgumentNullException(nameof(tempFolders));
             this.destinationFolders = destinationFolders ?? throw new System.ArgumentNullException(nameof(destinationFolders));
+            this.plottingManagerOptions = plottingManagerOptions;
         }
 
         public async Task Plot(CancellationToken cancellationToken)
