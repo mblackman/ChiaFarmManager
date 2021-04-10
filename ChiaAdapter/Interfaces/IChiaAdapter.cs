@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace ChiaAdapter
@@ -15,8 +14,6 @@ namespace ChiaAdapter
         /// <returns>The <see cref="FarmSummary"/> for this <see cref="IChiaAdapter"/>.</returns>
         Task<FarmSummary> GetFarmSummaryAsync();
 
-        Task<PlottingResults> CreatePlots(PlottingOptions plottingOptions, CancellationToken cancellationToken);
-
-        Task<IEnumerable<PlotDirectoryInfo>> GetPlotInfo();
+        Task<PlottingResults> CreatePlotsAsync(PlottingOptions plottingOptions, CancellationToken cancellationToken);
     }
 }

@@ -39,6 +39,16 @@ namespace ChiaManagerConsole
               "The size of plots to make.",
               CommandOptionType.SingleValue);
 
+            CommandOption memorySize = commandLineApplication.Option(
+              "-b <memory-size-per-plot>",
+              "The amount of memory (MB) to assign to each plotting process.",
+              CommandOptionType.SingleValue);
+
+            CommandOption threadsPerPlot = commandLineApplication.Option(
+              "-r <threads-per-plot>",
+              "The number of threads to give each plotting process.",
+              CommandOptionType.SingleValue);
+
             commandLineApplication.HelpOption("-? | -h | --help");
 
             commandLineApplication.OnExecute(async () =>
@@ -53,13 +63,23 @@ namespace ChiaManagerConsole
                 }
                 else if (chiaExe.HasValue())
                 {
-                    var adapter = new CliChiaAdapter(new ProcessChiaClient(chiaExe.Value()));
+                    var adapter = new CliChiaAdapter(new ProcessChiaClient(chiaExe.Value(), new ConsoleLogger<ProcessChiaClient>(LogLevel.All)));
                     var logger = new ConsoleLogger<PlottingManager>();
                     var options = new PlottingManagerOptions();
 
                     if (kSize.HasValue() && int.TryParse(kSize.Value(), out int setSize))
                     {
                         options.KSize = setSize;
+                    }
+
+                    if (memorySize.HasValue() && Int64.TryParse(memorySize.Value(), out long memorySizeSet))
+                    {
+                        options.TotalMemoryPerPlotMB = memorySizeSet;
+                    }
+
+                    if (threadsPerPlot.HasValue() && int.TryParse(threadsPerPlot.Value(), out int threadsPerPlotSet))
+                    {
+                        options.ThreadsPerPlot = threadsPerPlotSet;
                     }
 
                     var manager = new PlottingManager(logger, adapter, tempDirectories.Values, destinationDirectories.Values, options);

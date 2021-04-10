@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Common;
+
 namespace ChiaAdapter
 {
     /// <summary>
@@ -11,14 +13,16 @@ namespace ChiaAdapter
     public class ProcessChiaClient : IChiaClient
     {
         private readonly string exePath;
+        private readonly ILogger<ProcessChiaClient> logger;
 
         /// <summary>
         /// Creates a new instance of <see cref="ProcessChiaClient"/>.
         /// </summary>
         /// <param name="exePath">The path to the executable.</param>
-        public ProcessChiaClient(string exePath)
+        public ProcessChiaClient(string exePath, ILogger<ProcessChiaClient> logger)
         {
             this.exePath = exePath ?? throw new ArgumentNullException(nameof(exePath));
+            this.logger = logger;
         }
 
         /// <summary>
@@ -26,8 +30,10 @@ namespace ChiaAdapter
         /// </summary>
         /// <param name="arguments">The arguments to pass to the Chia executable.</param>
         /// <returns>The results from the command.</returns>
-        public async Task<string> RunCommandAsync(string arguments, CancellationToken cancellationToken)
+        public async Task<ClientResult> RunCommandAsync(string arguments, CancellationToken cancellationToken)
         {
+            logger.LogDebug("Running command: Chia " + arguments);
+
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
@@ -35,6 +41,7 @@ namespace ChiaAdapter
                     FileName = exePath,
                     Arguments = arguments,
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                 }
@@ -42,8 +49,26 @@ namespace ChiaAdapter
 
             process.Start();
             await process.WaitForExitAsync(cancellationToken);
-            string result = await process.StandardOutput.ReadToEndAsync();
-            return result;
+
+            if (process.ExitCode == 0)
+            {
+                // Gracefully ended.
+                string result = await process.StandardOutput.ReadToEndAsync();
+
+                logger.LogDebug("Successful result from command: Chia " + arguments);
+                logger.LogDebug(result);
+
+                return ClientResult.Success(result);
+            }
+            else
+            {
+                // Something went wrong.
+                string error = await process.StandardError.ReadToEndAsync();
+                logger.LogDebug("Failed from command: Chia " + arguments);
+                logger.LogDebug(error);
+
+                return ClientResult.Failure(error);
+            }
         }
     }
 }

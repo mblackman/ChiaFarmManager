@@ -21,10 +21,11 @@ namespace ChiaAdapter
 
         public string ToParameterString()
         {
-            var parameters = new List<(string, string)>();
-
-            parameters.Add(("-t", TempDirectory));
-            parameters.Add(("-d", FinalDirectory));
+            var parameters = new List<(string, string)>
+            {
+                ("-t", FormatPath(TempDirectory)),
+                ("-d", FormatPath(FinalDirectory))
+            };
 
             if (Size.HasValue)
             {
@@ -47,6 +48,20 @@ namespace ChiaAdapter
             }
 
             return string.Join(' ', parameters.Select(p => string.Join(' ', p.Item1, p.Item2)));
+        }
+
+        private static string FormatPath(string path)
+        {
+            if (!path.StartsWith('"'))
+            {
+                path = "\"" + path;
+            }
+            if (!path.EndsWith('"'))
+            {
+                path += "\"";
+            }
+
+            return path;
         }
     }
 }

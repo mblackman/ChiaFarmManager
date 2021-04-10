@@ -13,6 +13,25 @@ namespace ChiaAdapter
         /// </summary>
         /// <param name="arguments">The arguments to pass to the Chia executable.</param>
         /// <returns>The results from the command.</returns>
-        Task<string> RunCommandAsync(string arguments, CancellationToken cancellationToken);
+        Task<ClientResult> RunCommandAsync(string arguments, CancellationToken cancellationToken);
+    }
+
+    public class ClientResult
+    {
+        public string Result { get; private set; }
+        public bool IsSuccess { get; private set; }
+        public string ErrorMessage { get; private set; }
+
+        public static ClientResult Success(string result) => new ClientResult()
+        {
+            IsSuccess = true,
+            Result = result
+        };
+
+        public static ClientResult Failure(string errorMessage) => new ClientResult()
+        {
+            IsSuccess = false,
+            ErrorMessage = errorMessage
+        };
     }
 }

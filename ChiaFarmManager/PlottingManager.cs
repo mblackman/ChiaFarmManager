@@ -12,10 +12,10 @@ namespace ChiaFarmManager
 {
     public class PlottingManager
     {
+        private const int MaxPlottingFailures = 3;
+
         private const string StartPlottingFormat = "Started k = {0} plot in temp directory: {1} with destination: {2}";
         private const string EndPlottingFormat = "Finished plotting k = {0} plot in temp directory: {1} with destination: {2}";
-
-        private readonly KSize PlotSize = KSize.Create(32);
 
         private readonly ILogger<PlottingManager> logger;
         private readonly IChiaAdapter chiaAdapter;
@@ -42,6 +42,7 @@ namespace ChiaFarmManager
         {
             List<Task<PlottingResults>> plotTasks = new();
             Dictionary<string, int> runningPlots = new();
+            int numberPlotFailures = 0;
 
             logger.LogInfo("Starting process to fill out directories.");
 
@@ -69,26 +70,47 @@ namespace ChiaFarmManager
                 var finishedTask = await Task.WhenAny(plotTasks);
                 plotTasks.Remove(finishedTask);
                 var result = await finishedTask;
-                runningPlots[result.DestinationDirectory]--;
 
-                logger.LogInfo(string.Format(EndPlottingFormat, PlotSize.Value, result.TempDirectory, result.DestinationDirectory));
-
-                currentDestination = GetNextAvailableDestination(runningPlots);
-
-                if (currentDestination != null)
+                if (result.IsSuccess)
                 {
-                    plotTasks.Add(CreateNextPlot(currentDestination, result.TempDirectory, runningPlots, cancellationToken));
+                    runningPlots[result.DestinationDirectory]--;
+
+                    logger.LogInfo(string.Format(EndPlottingFormat, plottingManagerOptions.KSize, result.TempDirectory, result.DestinationDirectory));
+
+                    currentDestination = GetNextAvailableDestination(runningPlots);
+
+                    if (currentDestination != null)
+                    {
+                        plotTasks.Add(CreateNextPlot(currentDestination, result.TempDirectory, runningPlots, cancellationToken));
+                    }
+                }
+                else
+                {
+                    numberPlotFailures++;
+
+                    if (numberPlotFailures >= MaxPlottingFailures)
+                    {
+                        logger.LogError("Exceed maximum number of failed plots. Canceling job.");
+                        return;
+                    }
                 }
             }
+
+            logger.LogInfo("Finished filling out directories.");
         }
 
         private Task<PlottingResults> CreateNextPlot(string destination, string tempDirectory, Dictionary<string, int> runningPlots, CancellationToken cancellationToken)
         {
             ClearDirectory(tempDirectory);
-            Task<PlottingResults> item = chiaAdapter.CreatePlots(new PlottingOptions(tempDirectory, destination), cancellationToken);
+            PlottingOptions plottingOptions = new PlottingOptions(tempDirectory, destination)
+            {
+                Size = plottingManagerOptions.KSize,
+                NumberOfThreads = plottingManagerOptions.ThreadsPerPlot
+            };
+            Task<PlottingResults> item = chiaAdapter.CreatePlotsAsync(plottingOptions, cancellationToken);
             runningPlots[destination] = runningPlots.GetValueOrDefault(destination) + 1;
 
-            logger.LogInfo(string.Format(StartPlottingFormat, PlotSize.Value, tempDirectory, destination));
+            logger.LogInfo(string.Format(StartPlottingFormat, plottingManagerOptions.KSize, tempDirectory, destination));
 
             return item;
         }
@@ -105,6 +127,7 @@ namespace ChiaFarmManager
 
         private string GetNextAvailableDestination(IReadOnlyDictionary<string, int> potentialPlots)
         {
+            var plotSize = KSize.Create(plottingManagerOptions.KSize);
             return destinationFolders
                 .Select(f => new DirectoryInfo(f))
                 .Where(i => i.Exists && !string.IsNullOrEmpty(i.Root.Name))
@@ -113,8 +136,8 @@ namespace ChiaFarmManager
                 .FirstOrDefault(i =>
                 {
                     string directoryName = i.i.FullName;
-                    long potentialPlotsSize = potentialPlots.GetValueOrDefault(directoryName) * PlotSize.FinalSizeBytes;
-                    return i.Item2.AvailableFreeSpace - potentialPlotsSize > PlotSize.FinalSizeBytes;
+                    long potentialPlotsSize = potentialPlots.GetValueOrDefault(directoryName) * plotSize.FinalSizeBytes;
+                    return i.Item2.AvailableFreeSpace - potentialPlotsSize > plotSize.FinalSizeBytes;
                 }).i?.FullName;
         }
     }
