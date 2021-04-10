@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ChiaAdapter\ChiaAdapter.csproj" />
+    <ProjectReference Include="..\ChiaFarmManager\ChiaFarmManager.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 

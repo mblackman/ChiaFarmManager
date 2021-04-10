@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace ChiaAdapter
 {
@@ -12,6 +13,6 @@ namespace ChiaAdapter
         /// </summary>
         /// <param name="arguments">The arguments to pass to the Chia executable.</param>
         /// <returns>The results from the command.</returns>
-        Task<string> RunCommandAsync(string arguments);
+        Task<string> RunCommandAsync(string arguments, CancellationToken cancellationToken);
     }
 }

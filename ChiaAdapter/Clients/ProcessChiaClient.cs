@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ChiaAdapter
@@ -25,7 +26,7 @@ namespace ChiaAdapter
         /// </summary>
         /// <param name="arguments">The arguments to pass to the Chia executable.</param>
         /// <returns>The results from the command.</returns>
-        public async Task<string> RunCommandAsync(string arguments)
+        public async Task<string> RunCommandAsync(string arguments, CancellationToken cancellationToken)
         {
             var process = new Process()
             {
@@ -40,8 +41,8 @@ namespace ChiaAdapter
             };
 
             process.Start();
+            await process.WaitForExitAsync(cancellationToken);
             string result = await process.StandardOutput.ReadToEndAsync();
-            await process.WaitForExitAsync();
             return result;
         }
     }

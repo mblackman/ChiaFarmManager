@@ -2,7 +2,7 @@
 
 using ChiaAdapter;
 
-namespace ChiaFarmManager
+namespace ChiaManagerConsole
 {
     public static class Utils
     {

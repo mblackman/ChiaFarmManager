@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ChiaAdapter
@@ -21,6 +23,23 @@ namespace ChiaAdapter
             this.chiaClient = chiaClient ?? throw new ArgumentNullException(nameof(chiaClient));
         }
 
+        public async Task<PlottingResults> CreatePlots(PlottingOptions plottingOptions, CancellationToken cancellationToken)
+        {
+            if (plottingOptions is null)
+            {
+                throw new ArgumentNullException(nameof(plottingOptions));
+            }
+
+            const string plotCommandFormat = "plots create {0}";
+            await chiaClient.RunCommandAsync(string.Format(plotCommandFormat, plottingOptions.ToParameterString()), cancellationToken);
+            return new PlottingResults()
+            {
+                IsSuccess = true,
+                TempDirectory = plottingOptions.TempDirectory,
+                DestinationDirectory = plottingOptions.FinalDirectory
+            };
+        }
+
         /// <summary>
         /// Gets the current <see cref="GetFarmSummaryAsync"/>.
         /// </summary>
@@ -28,7 +47,7 @@ namespace ChiaAdapter
         public async Task<FarmSummary> GetFarmSummaryAsync()
         {
             var farmSummary = new FarmSummary();
-            string summaryCommandResults = await chiaClient.RunCommandAsync("farm summary");
+            string summaryCommandResults = await chiaClient.RunCommandAsync("farm summary", CancellationToken.None);
             string[] lines = summaryCommandResults.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
             Dictionary<string, string> parameters = lines.Select(l => l.Split(':')).Where(l => l.Length == 2).ToDictionary(k => k[0].Trim().ToLower(), v => v[1].Trim().ToLower());
 
@@ -96,6 +115,18 @@ namespace ChiaAdapter
             }
 
             return farmSummary;
+        }
+
+        public async Task<IEnumerable<PlotDirectoryInfo>> GetPlotInfo()
+        {
+            string result = await chiaClient.RunCommandAsync("plots show", CancellationToken.None);
+            var folders = result.Split(Environment.NewLine).Where(s => Directory.Exists(s));
+            return folders.Where(f => Directory.Exists(f)).Select(f =>
+            {
+                var directoryInfo = new DirectoryInfo(f);
+                int numPlots = directoryInfo.EnumerateFiles("*.plot").Count();
+                return new PlotDirectoryInfo(f, numPlots, 0);
+            });
         }
     }
 }
