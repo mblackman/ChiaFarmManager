@@ -82,10 +82,10 @@ namespace ChiaFarmManager
                 plotTasks.Remove(finishedTask);
                 var result = await finishedTask;
 
+                runningPlots[result.PlottingOptions.DestinationDirectory]--;
+
                 if (result.IsSuccess)
                 {
-                    runningPlots[result.PlottingOptions.DestinationDirectory]--;
-
                     logger.LogInfo(string.Format(EndPlottingFormat, plottingManagerOptions.KSize, result.PlottingOptions.TempDirectory, result.PlottingOptions.DestinationDirectory));
 
                     currentDestination = GetNextAvailableDestination(runningPlots);
